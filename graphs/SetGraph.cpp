@@ -15,7 +15,7 @@ void SetGraph::AddEdge(int from, int to) {
 }
 
 int SetGraph::VerticesCount() const {
-    return nextAdjacent.size();
+    return static_cast<int>(nextAdjacent.size());
 }
 
 std::vector<int> SetGraph::GetNextVertices(int vertex) const {

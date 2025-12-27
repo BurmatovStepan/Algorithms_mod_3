@@ -14,7 +14,7 @@ void MatrixGraph::AddEdge(int from, int to) {
 }
 
 int MatrixGraph::VerticesCount() const {
-    return adjacencyMatrix.size();
+    return static_cast<int>(adjacencyMatrix.size());
 }
 
 std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {

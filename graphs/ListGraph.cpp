@@ -15,7 +15,7 @@ void ListGraph::AddEdge(int from, int to) {
 }
 
 int ListGraph::VerticesCount() const {
-    return nextAdjacent.size();
+    return static_cast<int>(nextAdjacent.size());
 }
 
 std::vector<int> ListGraph::GetNextVertices(int vertex) const {
