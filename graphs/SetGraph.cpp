@@ -23,6 +23,6 @@ std::vector<int> SetGraph::GetNextVertices(int vertex) const {
 }
 
 std::vector<int> SetGraph::GetPrevVertices(int vertex) const {
-    return {nextAdjacent[vertex].begin(), nextAdjacent[vertex].end()};
+    return {prevAdjacent[vertex].begin(), prevAdjacent[vertex].end()};
 }
 } // namespace Graphs
