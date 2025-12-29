@@ -1,28 +1,29 @@
-// Дан невзвешенный неориентированный граф. В графе может быть несколько кратчайших путей между какими-то вершинами.
-// Найдите количество различных кратчайших путей между заданными вершинами.
-// Требования: сложность O(V+E), граф реализован в виде класса.
+// Требования: время работы O((N+M)logN), где N-количество городов, M-известных дорог между ними.
+// Граф должен быть реализован в виде класса.
 //
-// Формат ввода.
-// v: кол-во вершин (макс. 50000),
-// n: кол-во ребер (макс. 200000),
-// n пар реберных вершин,
-// пара вершин u, w для запроса.
+// Формат входных данных.
+// Первая строка содержит число N – количество городов.
+// Вторая строка содержит число M - количество дорог.
+// Каждая следующая строка содержит описание дороги (откуда, куда, время в пути).
+// Последняя строка содержит маршрут (откуда и куда нужно доехать).
 //
-// Формат вывода.
-// Количество кратчайших путей от u к w.
-
+// Формат выходных данных.
+// Вывести длину самого выгодного маршрута.
 // ┌─────────────┬─────────────┐
 // │     in      │     out     │
 // ├─────────────┼─────────────┤
-// │  4          │  2          │
-// │  5          │             │
-// │  0 1        │             │
+// │  6          │  9          │
+// │  9          │             │
+// │  0 3 1      │             │
+// │  0 4 2      │             │
+// │  1 2 7      │             │
+// │  1 3 2      │             │
+// │  1 4 3      │             │
+// │  1 5 3      │             │
+// │  2 5 3      │             │
+// │  3 4 4      │             │
+// │  3 5 6      │             │
 // │  0 2        │             │
-// │  1 2        │             │
-// │  1 3        │             │
-// │  2 3        │             │
-// │             │             │
-// │  0 3        │             │
 // └─────────────┴─────────────┘
 
 
@@ -34,77 +35,87 @@
 
 namespace MyGraph {
 class ListGraph {
+private:
+    struct Node {
+        int vertex = 0;
+        int pathLength = 0;
+
+        Node(int vertex, int pathLength) : vertex(vertex), pathLength(pathLength){}
+
+        friend bool operator<(const Node& self, const Node& other) {
+            return self.pathLength > other.pathLength;
+        }
+    };
+
+    std::vector<std::vector<Node>> nextAdjacent;
+
 public:
     ListGraph(const int vertexCount) : nextAdjacent(vertexCount) {}
 
-    void AddEdge(int from, int to) {
-        nextAdjacent[from].push_back(to);
-        nextAdjacent[to].push_back(from);
+    void AddEdge(int from, int to, int pathLength) {
+        nextAdjacent[from].push_back({to, pathLength});
+        nextAdjacent[to].push_back({from, pathLength});
     }
 
-    size_t VerticesCount() const {
+    int VerticesCount() const {
         return static_cast<int>(nextAdjacent.size());
     }
 
-    std::vector<int> GetNextVertices(int vertex) const {
+    std::vector<Node> GetNextVertices(int vertex) const {
         return nextAdjacent[vertex];
     }
 
-    int CountShortestPaths(int from, int to) {
+    int FindShortestPath(int from, int to) {
         std::vector<int> distance(VerticesCount(), std::numeric_limits<int>::max());
-        std::vector<int> pathsTo(VerticesCount(), 0);
+        std::priority_queue<Node> queue;
 
         distance[from] = 0;
-        pathsTo[from] = 1;
 
-        std::queue<int> queue;
-        queue.push(from);
+        queue.push({from, 0});
 
         while (!queue.empty()) {
-            int currentVertex = queue.front();
+            Node currentNode = queue.top();
             queue.pop();
 
-            for (int vertex : GetNextVertices(currentVertex)) {
-                if (distance[vertex] == std::numeric_limits<int>::max()) {
-                    distance[vertex] = distance[currentVertex] + 1;
-                    pathsTo[vertex] = pathsTo[currentVertex];
-                    queue.push(vertex);
+            if (currentNode.pathLength > distance[currentNode.vertex]) {
+                continue;
+            }
 
-                } else if (distance[vertex] == distance[currentVertex] + 1) {
-                    pathsTo[vertex] += pathsTo[currentVertex];
+            for (const Node& nextVertex : GetNextVertices(currentNode.vertex)) {
+                int newDistance = distance[currentNode.vertex] + nextVertex.pathLength;
+
+                if (newDistance < distance[nextVertex.vertex]) {
+                    distance[nextVertex.vertex] = newDistance;
+                    queue.push({nextVertex.vertex, newDistance});
                 }
             }
         }
 
-        return pathsTo[to];
+        return distance[to];
     }
-
-private:
-    std::vector<std::vector<int>> nextAdjacent;
 };
 } // namespace MyGraph
 
 
 void ProcessTask() {
-    int vertexCount = 0;
-    int edgeCount = 0;
+    int cityCount = 0;
+    int roadCount = 0;
 
-    std::cin >> vertexCount >> edgeCount;
+    std::cin >> cityCount >> roadCount;
 
-    MyGraph::ListGraph graph(vertexCount);
+    MyGraph::ListGraph graph(cityCount);
 
     int from = 0;
     int to = 0;
-    for (int i = 0; i < edgeCount; ++i) {
-        std::cin >> from >> to;
-        graph.AddEdge(from, to);
+    int lenght = 0;
+    for (int i = 0; i < roadCount; ++i) {
+        std::cin >> from >> to >> lenght;
+        graph.AddEdge(from, to, lenght);
     }
-
-    std::cin.ignore(1);
 
     std::cin >> from >> to;
 
-    std::cout << graph.CountShortestPaths(from, to);
+    std::cout << graph.FindShortestPath(from, to);
 }
 
 int main() {
